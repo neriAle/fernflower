@@ -303,9 +303,23 @@ public class ClassWriter {
 
     String name = mt.getName(), descriptor = mt.getDescriptor();
     if (CodeConstants.INIT_NAME.equals(name)) {
-//      TODO: if it is constructor: check if the params are all the record components
-//        if they don't match return false
-//        if they ALL match return true
+
+      StringBuilder desc = new StringBuilder();
+      desc.append("(");
+      for (StructField f : cl.getFields()) {
+        desc.append(f.getDescriptor());
+      }
+      desc.append(")V");
+      if (desc.toString().equals(descriptor)) {
+        if (code.countLines() == cl.getFields().size()) {
+          for (StructField f : cl.getFields()) {
+            if (!code.toString().contains("this." + f.getName() + " = " + f.getName() + ";")) {
+              return false;
+            }
+          }
+          return true;
+        }
+      }
     }
     return false;
   }
@@ -330,7 +344,6 @@ public class ClassWriter {
     }
     return false;
   }
-
 
   private void writeClassDefinition(ClassNode node, TextBuffer buffer, int indent) {
     if (node.type == ClassNode.CLASS_ANONYMOUS) {
